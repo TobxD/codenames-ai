@@ -1,8 +1,10 @@
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 import random
 import model
 
 app = Flask(__name__)
+CORS(app)
 
 allWords = open("data/words.txt").read().split("\n")
 
@@ -21,7 +23,7 @@ def calcHint(color, gameboard):
     return model.calcBestHint(myWords, otherWords)
 
 
-@app.route('/new_game')
+@app.route('/new_game', methods = ['POST'])
 def newGame():
     data = request.json
     singleTeam = data.get("singleTeam", True) if data else True
@@ -29,7 +31,7 @@ def newGame():
     return jsonify({"ok": True, "res": gameboard})
 
 
-@app.route('/get_hint')
+@app.route('/get_hint', methods = ['POST'])
 def getHint():
     data = request.json
     color = data["color"]
