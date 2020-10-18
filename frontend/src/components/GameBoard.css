@@ -1,0 +1,44 @@
+.cn-card {
+    color: black;
+    width: 18%;
+    height: 50px;
+    margin: 10px 1%;
+    display: grid;
+    place-items: center;
+    font-weight: bold;
+}
+
+.card-red {
+    background-color: red;
+}
+.card-blue {
+    background-color: blue;
+    color: white
+}
+.card-black {
+    background-color: black;
+    color: white
+}
+.card-white {
+    background-color: #DDD;
+}
+.card-gray {
+    background-color: gray;
+}
+
+#board-table {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#start-control {
+    display: flex;
+    justify-content: center;
+}
+
+#start-control > button {
+    margin: 5px;
+}
