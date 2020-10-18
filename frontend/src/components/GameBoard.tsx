@@ -29,7 +29,7 @@ type InternalCardInfo = {name:string, color:RealColor, opened:boolean};
 function Card({cardColor, name, onCardClicked} 
     : {cardColor:CardDisplayColor, name:string, onCardClicked: CallbackFunString}) {
     return (
-        <div className={"card-" + cardColor + " cn-card"} onClick={() => alert("clicked")}>
+        <div className={"card-" + cardColor + " cn-card"} onClick={() => onCardClicked(name)}>
             <div>{name}</div>
         </div>
     );
@@ -44,6 +44,34 @@ function GameBoard({cards, onCardClicked} : {cards: CardInfo[], onCardClicked: C
     );
 }
 
+function NextMove({onMoveEnded}: {onMoveEnded: CallbackFun}) {
+    return (
+        <div id="next-move-control">
+            <Button variant="success" onClick={onMoveEnded}>
+                End Move
+            </Button>
+        </div>
+    );
+}
+
+function StatusBar({playersTurn, hint, winner}: {playersTurn: string, hint: string, winner: string}) {
+    if(winner == "none"){
+        return (
+            <div id="status-bar">
+                    <p>To Move: {playersTurn}</p>
+                    <p>Hint: {hint}</p>
+            </div>
+        );
+    }
+    else{
+        return (
+            <div id="status-bar">
+                    <p>The Winner is: {winner}</p>
+            </div>
+        );
+    }
+}
+
 function internalToDisplay(internalState: InternalCardInfo[]) : CardInfo[] {
     return internalState.map(({name, color, opened}) => (
         {name:name, color:(opened ? color : "white") as CardDisplayColor}
@@ -51,10 +79,15 @@ function internalToDisplay(internalState: InternalCardInfo[]) : CardInfo[] {
 }
 
 export function Game() {
-    const names = "CRASH NOTE PEAR PRINCESS WHIP DRAFT HONEY AFRICA TORCH".split(" ");
+    /*const names = "CRASH NOTE PEAR PRINCESS WHIP DRAFT HONEY AFRICA TORCH".split(" ");
     const oldInfos = names.map((n) => (
         {name:n, color:"blue" as RealColor, opened:false} as InternalCardInfo));
-    const [infos, setInfos] = React.useState(oldInfos);
+    */
+    const [infos, setInfos] = React.useState([] as InternalCardInfo[]);
+    const [playersTurn, setPlayersTurn] = React.useState("red");
+    const [isOnePlayer, setIsOnePlayer] = React.useState(true);
+    const [hint, setHint] = React.useState("no hint");
+    const [winner, setWinner] = React.useState("none");
     
     async function newGame(singleTeam: boolean){
         console.log("starting new game...");
@@ -68,17 +101,38 @@ export function Game() {
         setInfos(gameboard);
     }
 
-    React.useEffect(() => {
-        // starup
-        newGame(true);
-    }, []);
-
+    function nextPlayer() {
+        if(winner != "none")
+            return;
+        setPlayersTurn(playersTurn === "red" ? "blue" : "red");
+    }
+    function determineWinner() {
+        const redWon = infos.reduce((state, {color, opened}) => state && (opened || color != "red"), true);
+        const blueWon = infos.reduce((state, {color, opened}) => state && (opened || color != "blue"), true);
+        if(redWon)
+            setWinner("red");
+        else if(!isOnePlayer && blueWon)
+            setWinner("blue");
+    }
     function onCardClicked(cardName: string) {
+        if(winner != "none")
+            return;
+        const newInfos : InternalCardInfo[] = []
+        var failed = false;
         for(let i=0; i<infos.length; i++){
-           if(infos[i].name == cardName){
-                
-           } 
+            newInfos.push({...infos[i]});
+            if (infos[i].name === cardName && !infos[i].opened){
+                if(infos[i].color != playersTurn){
+                    failed = true;
+                }
+                newInfos[i].opened = true;
+            } 
         }
+        if(failed){
+            nextPlayer();
+        }
+        determineWinner();
+        setInfos(newInfos);
     }
     function startOnePlayer() : void {
         newGame(true);
@@ -86,10 +140,16 @@ export function Game() {
     function startTwoPlayer() : void {
         newGame(false);
     }
+    React.useEffect(() => {
+        // starup
+        newGame(true);
+    }, []);
     return (
         <div>
             <StartControl onOneStart={startOnePlayer} onTwoStart={startTwoPlayer} />
             <GameBoard cards={internalToDisplay(infos)} onCardClicked={onCardClicked} />
+            <NextMove onMoveEnded={nextPlayer} />
+            <StatusBar playersTurn={playersTurn} hint={hint} winner={winner} />
         </div>
     );
 }

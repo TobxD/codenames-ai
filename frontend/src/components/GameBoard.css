@@ -42,3 +42,19 @@
 #start-control > button {
     margin: 5px;
 }
+
+#next-move-control {
+    margin-top: 50px;
+    display: flex;
+    justify-content: center;
+}
+
+#status-bar {
+    display: flex;
+    justify-content: space-evenly;
+}
+
+#status-bar > p {
+    padding: 5px;
+    background-color: orange;
+}
