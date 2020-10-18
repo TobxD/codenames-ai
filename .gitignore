@@ -1,2 +1,4 @@
 GoogleNews-vectors-negative300.bin
+words.txt
 input.txt
+__pycache__
