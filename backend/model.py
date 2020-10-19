@@ -14,15 +14,18 @@ def getScore(word, myWords, otherWords, returnWords=False):
         return simOwn[index] > simOther and simOwn[index] > 0.3
 
     wordsTarget = [myWords[i] for i in range(len(myWords)) if isValid(i)]
-    minScore = min([simOwn[i] for i in range(len(myWords)) if isValid(i)])
+    minScore = min([simOwn[i] for i in range(len(myWords)) if isValid(i)] + [1])
     
     if returnWords:
         return wordsTarget
     return (len(wordsTarget), minScore)
 
 def calcBestHint(myWords, otherWords):
+    print("starting score calculation")
     scoreWords = [(getScore(w, myWords, otherWords), w) for w in words]
+    print("done.")
     scoreWords.sort(reverse=True)
-    bestWord = scoreWords[0][0]
+    bestWord = scoreWords[0][1]
     hintedWords = getScore(bestWord, myWords, otherWords, returnWords=True)
-    return {"hint": bestWord, "count": len(hintedWords), "hintedWords": hintedWords}
+    print("returning")
+    return {"hint": bestWord.replace("_", " "), "count": len(hintedWords), "hintedWords": hintedWords}

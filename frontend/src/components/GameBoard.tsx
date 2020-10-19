@@ -22,6 +22,7 @@ function StartControl({onOneStart, onTwoStart} : {onOneStart: CallbackFun, onTwo
 }
 
 type RealColor = "red" | "blue" | "black" | "grey";
+type Player = "red" | "blue";
 type CardDisplayColor = RealColor | "white";
 type CardInfo = {name:string, color:CardDisplayColor};
 type InternalCardInfo = {name:string, color:RealColor, opened:boolean};
@@ -54,12 +55,13 @@ function NextMove({onMoveEnded}: {onMoveEnded: CallbackFun}) {
     );
 }
 
-function StatusBar({playersTurn, hint, winner}: {playersTurn: string, hint: string, winner: string}) {
-    if(winner == "none"){
+function StatusBar({playersTurn, hint, winner}
+    : {playersTurn: string, hint: {hint : string, count: number, done: number}, winner: Player | null}) {
+    if(winner === null){
         return (
             <div id="status-bar">
                     <p>To Move: {playersTurn}</p>
-                    <p>Hint: {hint}</p>
+                    <p>Hint: <b>{hint.hint}</b> ({hint.done}/{hint.count})</p>
             </div>
         );
     }
@@ -80,10 +82,10 @@ function internalToDisplay(internalState: InternalCardInfo[]) : CardInfo[] {
 
 export function Game() {
     const [infos, setInfos] = React.useState([] as InternalCardInfo[]);
-    const [playersTurn, setPlayersTurn] = React.useState("red");
+    const [playersTurn, setPlayersTurn] = React.useState("red" as Player);
     const [isOnePlayer, setIsOnePlayer] = React.useState(false);
-    const [hint, setHint] = React.useState("no hint");
-    const [winner, setWinner] = React.useState("none");
+    const [hint, setHint] = React.useState({hint: "", count: 0, done: 0});
+    const [winner, setWinner] = React.useState(null as Player | null);
     
     async function newGame(singleTeam: boolean){
         console.log("starting new game...");
@@ -96,14 +98,27 @@ export function Game() {
         const gameboard : InternalCardInfo[] = res.res;
         setInfos(gameboard);
         setPlayersTurn("red");
+        fetchNewHint(playersTurn, gameboard);
         setIsOnePlayer(singleTeam);
-        setWinner("none");
+        setWinner(null);
+    }
+
+    async function fetchNewHint(player: Player, gameboard : InternalCardInfo[]) {
+        const fetchRes = await fetch(`${DOMAIN}/get_hint`,{
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({color: player, gameboard: gameboard})
+        });
+        const res = await fetchRes.json();
+        setHint({...res.res, done: 0});
     }
 
     function nextPlayer() {
-        if(winner != "none")
+        if(winner !== null)
             return;
-        setPlayersTurn(playersTurn === "red" ? "blue" : "red");
+        const newPlayer = playersTurn === "red" && !isOnePlayer ? "blue" : "red";
+        setPlayersTurn(newPlayer);
+        fetchNewHint(newPlayer, infos);
     }
     function determineWinner(infos: InternalCardInfo[]) {
         const redWon = infos.reduce((state, {color, opened}) => state && (opened || color != "red"), true);
@@ -114,7 +129,7 @@ export function Game() {
             setWinner("blue");
     }
     function onCardClicked(cardName: string) {
-        if(winner != "none")
+        if(winner !== null)
             return;
         const newInfos : InternalCardInfo[] = []
         var failed = false;
@@ -123,6 +138,8 @@ export function Game() {
             if (infos[i].name === cardName && !infos[i].opened){
                 if(infos[i].color != playersTurn){
                     failed = true;
+                }else{
+                    setHint({...hint, done: hint.done+1});
                 }
                 if(infos[i].color === "black"){
                     setWinner(playersTurn === "red" ? "blue" : "red");
@@ -144,7 +161,7 @@ export function Game() {
     }
     React.useEffect(() => {
         // starup
-        newGame(true);
+        newGame(isOnePlayer);
     }, []);
     return (
         <div>

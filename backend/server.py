@@ -6,7 +6,7 @@ import model
 app = Flask(__name__)
 CORS(app)
 
-allWords = open("data/words.txt").read().split("\n")
+allWords = [w for w in open("data/words.txt").read().split("\n") if len(w) > 0]
 
 def getGameBoard(isSingleTeam : bool):
     words = random.sample(allWords, 25)
@@ -17,9 +17,12 @@ def getGameBoard(isSingleTeam : bool):
     return [{"name": words[i], "color": cardColor[i], "opened": False} for i in range(25)]
 
 def calcHint(color, gameboard):
+    def cleanWord(w:str):
+        return w.lower().replace(" ", "_")
+
     cards = [c for c in gameboard if not c["opened"]]
-    myWords = [c["name"] for c in cards if c["color"] == color]
-    otherWords = [c["name"] for c in cards if c["color"] != color]
+    myWords = [cleanWord(c["name"]) for c in cards if c["color"] == color]
+    otherWords = [cleanWord(c["name"]) for c in cards if c["color"] != color]
     return model.calcBestHint(myWords, otherWords)
 
 
