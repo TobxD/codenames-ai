@@ -10,9 +10,9 @@ allWords = open("data/words.txt").read().split("\n")
 
 def getGameBoard(isSingleTeam : bool):
     words = random.sample(allWords, 25)
-    cardColor = ( ["red"] * 8 + ["blue"] * 7 + ["black"] + ["gray"] * 10 
-                 if isSingleTeam else
-                  ["red"] * 10 + ["black"] + ["gray"] * 14 )
+    cardColor = ( ["red"] * 10 + ["black"] + ["gray"] * 14
+                    if isSingleTeam else
+                        ["red"] * 8 + ["blue"] * 7 + ["black"] + ["gray"] * 10 )
     random.shuffle(cardColor)
     return [{"name": words[i], "color": cardColor[i], "opened": False} for i in range(25)]
 

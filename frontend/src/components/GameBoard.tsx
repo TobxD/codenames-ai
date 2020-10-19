@@ -79,13 +79,9 @@ function internalToDisplay(internalState: InternalCardInfo[]) : CardInfo[] {
 }
 
 export function Game() {
-    /*const names = "CRASH NOTE PEAR PRINCESS WHIP DRAFT HONEY AFRICA TORCH".split(" ");
-    const oldInfos = names.map((n) => (
-        {name:n, color:"blue" as RealColor, opened:false} as InternalCardInfo));
-    */
     const [infos, setInfos] = React.useState([] as InternalCardInfo[]);
     const [playersTurn, setPlayersTurn] = React.useState("red");
-    const [isOnePlayer, setIsOnePlayer] = React.useState(true);
+    const [isOnePlayer, setIsOnePlayer] = React.useState(false);
     const [hint, setHint] = React.useState("no hint");
     const [winner, setWinner] = React.useState("none");
     
@@ -99,6 +95,9 @@ export function Game() {
         const res = await fetchRes.json();
         const gameboard : InternalCardInfo[] = res.res;
         setInfos(gameboard);
+        setPlayersTurn("red");
+        setIsOnePlayer(singleTeam);
+        setWinner("none");
     }
 
     function nextPlayer() {
@@ -106,7 +105,7 @@ export function Game() {
             return;
         setPlayersTurn(playersTurn === "red" ? "blue" : "red");
     }
-    function determineWinner() {
+    function determineWinner(infos: InternalCardInfo[]) {
         const redWon = infos.reduce((state, {color, opened}) => state && (opened || color != "red"), true);
         const blueWon = infos.reduce((state, {color, opened}) => state && (opened || color != "blue"), true);
         if(redWon)
@@ -125,14 +124,17 @@ export function Game() {
                 if(infos[i].color != playersTurn){
                     failed = true;
                 }
+                if(infos[i].color === "black"){
+                    setWinner(playersTurn === "red" ? "blue" : "red");
+                }
                 newInfos[i].opened = true;
             } 
         }
+        determineWinner(newInfos);
+        setInfos(newInfos);
         if(failed){
             nextPlayer();
         }
-        determineWinner();
-        setInfos(newInfos);
     }
     function startOnePlayer() : void {
         newGame(true);
