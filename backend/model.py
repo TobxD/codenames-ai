@@ -8,13 +8,13 @@ def getSimil(w, lst):
 
 def getScore(word, myWords, otherWords, returnWords=False):
     for w in myWords+otherWords:
-        if w in word or word in w:
+        if w.lower() in word.lower() or word.lower() in w.lower():
             return (-1, -1)
     simOwn = getSimil(word, myWords)
     simOther = max(getSimil(word, otherWords))
 
     def isValid(index):
-        return simOwn[index] > simOther and simOwn[index] > 0.3
+        return simOwn[index] > simOther and simOwn[index] > 0.25
 
     wordsTarget = [myWords[i] for i in range(len(myWords)) if isValid(i)]
     minScore = min([simOwn[i] for i in range(len(myWords)) if isValid(i)] + [1])
@@ -30,5 +30,5 @@ def calcBestHint(myWords, otherWords):
     scoreWords.sort(reverse=True)
     bestWord = scoreWords[0][1]
     hintedWords = getScore(bestWord, myWords, otherWords, returnWords=True)
-    print("returning")
+    print("returning -> {:.2f} ".format(scoreWords[0][0][1]))
     return {"hint": bestWord.replace("_", " "), "count": len(hintedWords), "hintedWords": hintedWords}

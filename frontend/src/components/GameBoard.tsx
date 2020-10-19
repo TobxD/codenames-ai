@@ -84,6 +84,7 @@ export function Game() {
     }
 
     async function fetchNewHint(player: Player, gameboard : InternalCardInfo[]) {
+        setHint({hint: null, count: 0, done: 0});
         const fetchRes = await fetch(`${DOMAIN}/get_hint`,{
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -98,7 +99,6 @@ export function Game() {
             return;
         const newPlayer = playersTurn === "red" && !isOnePlayer ? "blue" : "red";
         setPlayersTurn(newPlayer);
-        setHint({hint: null, count: 0, done: 0});
         fetchNewHint(newPlayer, infos);
     }
     function determineWinner(infos: InternalCardInfo[]) {
@@ -110,7 +110,7 @@ export function Game() {
             setWinner("blue");
     }
     function onCardClicked(cardName: string) {
-        if(winner !== null)
+        if(winner !== null || hint.hint===null)
             return;
         const newInfos : InternalCardInfo[] = []
         var failed = false;
@@ -130,7 +130,7 @@ export function Game() {
         }
         determineWinner(newInfos);
         setInfos(newInfos);
-        if(failed){
+        if(failed && winner==null){
             nextPlayer();
         }
     }
