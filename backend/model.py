@@ -7,6 +7,9 @@ def getSimil(w, lst):
 	return [model.similarity(w, w2) for w2 in lst]
 
 def getScore(word, myWords, otherWords, returnWords=False):
+    for w in myWords+otherWords:
+        if w in word or word in w:
+            return (-1, -1)
     simOwn = getSimil(word, myWords)
     simOther = max(getSimil(word, otherWords))
 
