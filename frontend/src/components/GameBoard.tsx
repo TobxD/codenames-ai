@@ -1,8 +1,6 @@
-import { stringify } from 'querystring';
 import React from 'react';
 import './GameBoard.css'
 import Button from 'react-bootstrap/Button'
-import { REFUSED } from 'dns';
 import { DOMAIN } from "../constants"
 
 type CallbackFun = () => void;
@@ -121,8 +119,8 @@ export function Game() {
         fetchNewHint(newPlayer, infos);
     }
     function determineWinner(infos: InternalCardInfo[]) {
-        const redWon = infos.reduce((state, {color, opened}) => state && (opened || color != "red"), true);
-        const blueWon = infos.reduce((state, {color, opened}) => state && (opened || color != "blue"), true);
+        const redWon = infos.reduce((state, {color, opened}) => state && (opened || color !== "red"), true);
+        const blueWon = infos.reduce((state, {color, opened}) => state && (opened || color !== "blue"), true);
         if(redWon)
             setWinner("red");
         else if(!isOnePlayer && blueWon)
@@ -136,7 +134,7 @@ export function Game() {
         for(let i=0; i<infos.length; i++){
             newInfos.push({...infos[i]});
             if (infos[i].name === cardName && !infos[i].opened){
-                if(infos[i].color != playersTurn){
+                if(infos[i].color !== playersTurn){
                     failed = true;
                 }else{
                     setHint({...hint, done: hint.done+1});
@@ -160,7 +158,7 @@ export function Game() {
         newGame(false);
     }
     React.useEffect(() => {
-        // starup
+        // startup
         newGame(isOnePlayer);
     }, []);
     return (

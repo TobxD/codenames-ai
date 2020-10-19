@@ -18,7 +18,7 @@ def getGameBoard(isSingleTeam : bool):
 
 def calcHint(color, gameboard):
     def cleanWord(w:str):
-        return w.lower().replace(" ", "_")
+        return w.replace(" ", "_")
 
     cards = [c for c in gameboard if not c["opened"]]
     myWords = [cleanWord(c["name"]) for c in cards if c["color"] == color]
