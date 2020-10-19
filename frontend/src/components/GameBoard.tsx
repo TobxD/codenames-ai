@@ -2,6 +2,7 @@ import React from 'react';
 import './GameBoard.css'
 import Button from 'react-bootstrap/Button'
 import { DOMAIN } from "../constants"
+import { StatusBar } from './StatusBar';
 
 type CallbackFun = () => void;
 type CallbackFunString = (arg0: string) => void;
@@ -19,8 +20,8 @@ function StartControl({onOneStart, onTwoStart} : {onOneStart: CallbackFun, onTwo
     );
 }
 
+export type Player = "red" | "blue";
 type RealColor = "red" | "blue" | "black" | "grey";
-type Player = "red" | "blue";
 type CardDisplayColor = RealColor | "white";
 type CardInfo = {name:string, color:CardDisplayColor};
 type InternalCardInfo = {name:string, color:RealColor, opened:boolean};
@@ -53,25 +54,6 @@ function NextMove({onMoveEnded}: {onMoveEnded: CallbackFun}) {
     );
 }
 
-function StatusBar({playersTurn, hint, winner}
-    : {playersTurn: string, hint: {hint : string, count: number, done: number}, winner: Player | null}) {
-    if(winner === null){
-        return (
-            <div id="status-bar">
-                    <p>To Move: {playersTurn}</p>
-                    <p>Hint: <b>{hint.hint}</b> ({hint.done}/{hint.count})</p>
-            </div>
-        );
-    }
-    else{
-        return (
-            <div id="status-bar">
-                    <p>The Winner is: {winner}</p>
-            </div>
-        );
-    }
-}
-
 function internalToDisplay(internalState: InternalCardInfo[]) : CardInfo[] {
     return internalState.map(({name, color, opened}) => (
         {name:name, color:(opened ? color : "white") as CardDisplayColor}
@@ -82,7 +64,7 @@ export function Game() {
     const [infos, setInfos] = React.useState([] as InternalCardInfo[]);
     const [playersTurn, setPlayersTurn] = React.useState("red" as Player);
     const [isOnePlayer, setIsOnePlayer] = React.useState(false);
-    const [hint, setHint] = React.useState({hint: "", count: 0, done: 0});
+    const [hint, setHint] = React.useState({hint: null as string | null, count: 0, done: 0});
     const [winner, setWinner] = React.useState(null as Player | null);
     
     async function newGame(singleTeam: boolean){
@@ -116,6 +98,7 @@ export function Game() {
             return;
         const newPlayer = playersTurn === "red" && !isOnePlayer ? "blue" : "red";
         setPlayersTurn(newPlayer);
+        setHint({hint: null, count: 0, done: 0});
         fetchNewHint(newPlayer, infos);
     }
     function determineWinner(infos: InternalCardInfo[]) {
